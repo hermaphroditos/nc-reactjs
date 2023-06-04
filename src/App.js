@@ -3,6 +3,7 @@ import Home from "./routes/Home";
 import Detail from "./routes/Detail";
 
 function App() {
+	// npm i gh-pages : install gh-pages to deploy
 	return (
 		<Router>
 			{/* Switch -> Routes (updated) */}
