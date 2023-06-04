@@ -1,76 +1,40 @@
 import { useState, useEffect } from "react";
 
 function App() {
-	const [loading, setLoading] = useState(true);
-	const [coins, setCoins] = useState([]);
-	const [usd, setUsd] = useState(0);
-	const [selectedCoin, setSelectedCoin] = useState(null);
-	const [exchange, setExchange] = useState(0);
-
-	const onChange = (e) => {
-		setUsd(e.target.value);
+  const [loading, setLoading] = useState(true);
+	const [movies, setMovies] = useState([]);
+	const getMovies = async () => {
+		const json = await (
+			await fetch(
+				`https://yts.mx/api/v2/list_movies.json?minimum_rating=8.8&sort_by=year`
+			)
+		).json();
+		setMovies(json.data.movies);
+		setLoading(false);
 	};
-
-	const findCoin = (coin) => {
-		const foundCoin = coins.find((c) => c.name === coin);
-		return foundCoin;
-	};
-
-	const onSelect = (e) => {
-		const selectedCoinObj = findCoin(e.target.value.split("(")[0].trim());
-		setSelectedCoin(selectedCoinObj);
-	};
-
 	useEffect(() => {
-		fetch("https://api.coinpaprika.com/v1/tickers?limit=30")
-			.then((res) => res.json())
-			.then((data) => {
-				setCoins(data);
-				setLoading(false);
-			})
-			.catch((error) => {
-				console.error("Error fetching coins:", error);
-			});
+		getMovies();
 	}, []);
-
-	useEffect(() => {
-		setUsd(parseInt(usd));
-		if (selectedCoin) {
-			const priceFloat = parseFloat(parseFloat(selectedCoin.quotes.USD.price));
-			setExchange(usd / priceFloat);
-		}
-	}, [selectedCoin, usd]);
-
-	useEffect(() => {
-		if (coins.length > 0) {
-			const selectedCoinObj = findCoin(coins[0].name);
-			setSelectedCoin(selectedCoinObj);
-		}
-	}, [coins]);
-
+	console.log(movies);
 	return (
 		<div>
-			<h1>The Coins {loading ? "" : `(${coins.length})`}</h1>
-			<input
-				onChange={onChange}
-				value={usd}
-				type="text"
-				placeholder="input your USD here"
-			/>
-			<p>
-				You can buy: {exchange} {selectedCoin?.symbol}
-			</p>
-			<p>Coins will be listed here</p>
 			{loading ? (
-				<p>Loading...</p>
+				<h1>loading...</h1>
 			) : (
-				<select id="" onChange={onSelect}>
-					{coins.map((coin) => (
-						<option key={coin.id}>
-							{coin.name} ({coin.symbol}): {coin.quotes.USD.price}
-						</option>
+				<div>
+					{movies.map((movie) => (
+						<div key={movie.id}>
+							<img src={movie.medium_cover_image} alt={movie.title} />
+							<h2>{movie.title}</h2>
+							<p>{movie.summary}</p>
+							<ul>
+								{movie.genres.map((genre, index) => (
+									<li key={index}>{genre}</li>
+								))}
+							</ul>
+						</div>
 					))}
-				</select>
+				</div>
 			)}
 		</div>
 	);
